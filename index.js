@@ -3,75 +3,67 @@ const express = require('express');
 
 const server = express();
 
-server.use(express.json()); // faz com que o express entenda JSON
+server.use(express.json());
 
-// Query params = ?teste=1
-// Route params = /geeks/1
-// Request body = { "name": "Brendon", "email": "brendon@email.com"}
+const patients = ['Joao Neto', 'Lucia Menezes', 'Marina Marques', 'Victoria Maria'];
 
-// CRUD - Create, Read, Update, Delete
+server.use((req, res, next) => { 
+  console.time('Request'); 
+  console.log(`Método: ${req.method}; URL: ${req.url}; `); 
 
-const geeks = ['Brendon', 'Lara', 'Gregory', 'Hunter'];
+  next(); 
 
-server.use((req, res, next) => { // server.use cria o middleware global
-  console.time('Request'); // marca o início da requisição
-  console.log(`Método: ${req.method}; URL: ${req.url}; `); // retorna qual o método e url foi chamada
+  console.log('Finalizou'); 
 
-  next(); // função que chama as próximas ações 
-
-  console.log('Finalizou'); // será chamado após a requisição ser concluída
-
-  console.timeEnd('Request'); // marca o fim da requisição
+  console.timeEnd('Request'); 
 });
 
-function checkGeekExists(req, res, next) {
+function checkpatientExists(req, res, next) {
   if (!req.body.name) {
-    return res.status(400).json({ error: 'geek name is required' });
-    // middleware local que irá checar se a propriedade name foi infomada, 
-    // caso negativo, irá retornar um erro 400 - BAD REQUEST 
+    return res.status(400).json({ error: 'patient name is required' });
+
   }
-  return next(); // se o nome for informado corretamente, a função next() chama as próximas ações
+  return next(); 
 } 
   
-function checkGeekInArray(req, res, next) {
-  const geek = geeks[req.params.index];
-  if (!geek) {
-    return res.status(400).json({ error: 'geek does not exists' });
-  } // checa se o Geek existe no array, caso negativo informa que o index não existe no array
+function checkpatientInArray(req, res, next) {
+  const patient = patients[req.params.index];
+  if (!patient) {
+    return res.status(400).json({ error: 'patient does not exists' });
+  }
 
-  req.geek = geek;
+  req.patient = patient;
 
   return next();
 }
 
-server.get('/geeks', (req, res) => {
-  return res.json(geeks);
-}) // rota para listar todos os geeks
+server.get('/patients', (req, res) => {
+  return res.json(patients);
+}) // rota para listar todos os patients
 
-server.get('/geeks/:index', checkGeekInArray, (req, res) => {
-  return res.json(req.geek);
+server.get('/patients/:index', checkpatientInArray, (req, res) => {
+  return res.json(req.patient);
 })
 
-server.post('/geeks', checkGeekExists, (req, res) => {
-  const { name } = req.body; // assim esperamos buscar o name informado dentro do body da requisição  
-  geeks.push(name);
-  return res.json(geeks); // retorna a informação da variavel geeks
+server.post('/patients', checkpatientExists, (req, res) => {
+  const { name } = req.body; 
+  patients.push(name);
+  return res.json(patients); 
 })
 
-server.put('/geeks/:index', checkGeekInArray, checkGeekExists, (req, res) => {
-  const { index } = req.params; // recupera o index com os dados
-  const { name } = req.body;
-  geeks[index] = name; // sobrepõe/edita o index obtido na rota de acordo com o novo valor
-  return res.json(geeks);
-}); // retorna novamente os geeks atualizados após o update
+server.put('/patients/:index', checkpatientInArray, checkpatientExists, (req, res) => {
+  const { index } = req.params; 
+  patients[index] = name;
+  return res.json(patients);
+}); 
 
-server.delete('/geeks/:index', checkGeekInArray, (req, res) => {
-  const { index } = req.params; // recupera o index com os dados
+server.delete('/patients/:index', checkpatientInArray, (req, res) => {
+  const { index } = req.params; 
 
-  geeks.splice(index, 1); // percorre o vetor até o index selecionado e deleta uma posição no array
+  patients.splice(index, 1); 
 
   return res.send();
-}); // retorna os dados após exclusão
+}); 
 
 
 server.listen(3000);
